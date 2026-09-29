@@ -8,12 +8,14 @@
     - name: Actualizar la lista de paquetes (apt update)
       ansible.builtin.apt:
         update_cache: yes
+      become: yes
 
     - name: Aplicar actualizaciones de paquetes (apt upgrade)
       ansible.builtin.apt:
         upgrade: dist
         autoremove: yes
         autoclean: yes
+      become: yes
 
     - name: Verificar si el sistema requiere reinicio
       ansible.builtin.stat:
