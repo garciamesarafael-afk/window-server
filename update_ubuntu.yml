@@ -8,6 +8,8 @@
     - name: Actualizar la lista de paquetes (apt update)
       ansible.builtin.apt:
         update_cache: yes
+      become: yes
+      become_user: root
 
     - name: Aplicar actualizaciones de paquetes (apt upgrade)
       ansible.builtin.apt:
