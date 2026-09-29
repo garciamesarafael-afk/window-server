@@ -1,0 +1,40 @@
+---
+- name: Actualizar Ubuntu Server (Host Docker)
+  hosts: ubuntu_docker
+  become: true
+
+  tasks:
+    - name: Actualizar la lista de paquetes (apt update)
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Aplicar actualizaciones de paquetes (apt upgrade)
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+
+    - name: Verificar si el sistema requiere reinicio
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_file
+
+    - name: Reiniciar el servidor si es necesario
+      ansible.builtin.reboot:
+        msg: "Reinicio automático por parches del SO"
+        reboot_timeout: 300
+      when: reboot_file.stat.exists
+
+    - name: Esperar 15 segundos para dar tiempo al demonio de Docker
+      ansible.builtin.pause:
+        seconds: 15
+      when: reboot_file.stat.exists
+
+    - name: Verificar el estado de los contenedores Docker
+      ansible.builtin.command: docker ps --format "{{ '{{' }}.Names{{ '}}' }} - {{ '{{' }}.Status{{ '}}' }}"
+      register: docker_status
+      changed_when: false
+
+    - name: Mostrar contenedores activos tras el mantenimiento
+      ansible.builtin.debug:
+        var: docker_status.stdout_lines
