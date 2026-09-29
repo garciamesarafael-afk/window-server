@@ -1,0 +1,13 @@
+---
+- name: Actualización Automática de Windows Server
+  hosts: all
+  gather_facts: no
+  tasks:
+    - name: Buscar e instalar actualizaciones acumulativas y de seguridad
+      ansible.windows.win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+        reboot: yes
+        reboot_timeout: 1200
