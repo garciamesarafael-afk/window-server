@@ -6,8 +6,8 @@
 
   tasks:
     - name: Actualizar la lista de paquetes (apt update)
-      ansible.builtin.apt: sudo apt-get update
-      changed_when: false
+      ansible.builtin.apt:
+        update_cache: yes
 
     - name: Aplicar actualizaciones de paquetes (apt upgrade)
       ansible.builtin.apt:
@@ -39,3 +39,5 @@
     - name: Mostrar contenedores activos tras el mantenimiento
       ansible.builtin.debug:
         var: docker_status.stdout_lines
+
+   
