@@ -2,6 +2,7 @@
 - name: Actualizar Ubuntu Server (Host Docker)
   hosts: ubuntu_docker
   become: true
+  become_method: sudo
 
   tasks:
     - name: Actualizar la lista de paquetes (apt update)
