@@ -1,0 +1,10 @@
+---
+- name: Descargar backup de configuracion de pfSense
+  hosts: localhost
+  connection: local
+
+  tasks:
+    - name: Descargar config.xml via SSH desde pfSense
+      ansible.builtin.command: >
+        scp admin@192.168.20.1:/conf/config.xml /tmp/pfsense_config_{{ ansible_date_time.date }}.xml
+      changed_when: false
