@@ -1,0 +1,21 @@
+---
+- name: Verificación de estado de pfSense
+  hosts: pfsense
+  gather_facts: false
+
+  tasks:
+    - name: Comprobar la versión de pfSense
+      ansible.builtin.command: cat /etc/version
+      register: pfsense_version
+      changed_when: false
+
+    - name: Comprobar el tiempo de actividad (Uptime)
+      ansible.builtin.command: uptime
+      register: pfsense_uptime
+      changed_when: false
+
+    - name: Mostrar estado y versión
+      ansible.builtin.debug:
+        msg:
+          - "Versión de pfSense: {{ pfsense_version.stdout }}"
+          - "Tiempo activo: {{ pfsense_uptime.stdout }}"
