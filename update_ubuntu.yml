@@ -1,14 +1,21 @@
 ---
 - name: Actualizar Ubuntu Server (Host Docker)
   hosts: ubuntu_docker
+  become: true
 
   tasks:
     - name: Actualizar la lista de paquetes (apt update)
-      ansible.builtin.shell: sudo apt-get update
-      changed_when: false
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        lock_timeout: 300
 
     - name: Aplicar actualizaciones de paquetes (apt upgrade)
-      ansible.builtin.shell: sudo apt-get dist-upgrade -y && sudo apt-get autoremove -y && sudo apt-get autoclean -y
+      ansible.builtin.apt:
+        upgrade: dist
+        autoremove: yes
+        autoclean: yes
+        lock_timeout: 300
 
     - name: Verificar si el sistema requiere reinicio
       ansible.builtin.stat:
@@ -16,7 +23,7 @@
       register: reboot_file
 
     - name: Reiniciar el servidor si es necesario
-      ansible.builtin.shell: sudo reboot
+      ansible.builtin.reboot:
       when: reboot_file.stat.exists
 
     - name: Esperar 15 segundos para dar tiempo al demonio de Docker
