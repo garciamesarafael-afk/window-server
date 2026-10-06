@@ -1,6 +1,8 @@
 ---
 - name: Verificación de estado de pfSense
   hosts: pfsense
+  vars:
+    ansible_user: root
   gather_facts: false
 
   tasks:
