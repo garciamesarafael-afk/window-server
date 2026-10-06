@@ -3,6 +3,7 @@
   hosts: pfsense
   vars:
     ansible_user: root
+    ansible_port: 2222
   gather_facts: false
 
   tasks:
