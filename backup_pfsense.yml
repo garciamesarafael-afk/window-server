@@ -1,4 +1,4 @@
-----
+---
 - name: Respaldar la configuración XML de pfSense (Solo última copia)
   hosts: pfsense
   gather_facts: false
