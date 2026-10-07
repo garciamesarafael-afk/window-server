@@ -1,5 +1,5 @@
 ---
-- name: Respaldar la configuración XML de pfSense
+- name: Respaldar la configuración XML de pfSense (Solo última copia)
   hosts: pfsense
   gather_facts: false
 
@@ -15,12 +15,12 @@
       delegate_to: localhost
       run_once: true
 
-    - name: Descargar el archivo config.xml desde pfSense
+    - name: Descargar el archivo config.xml (Sobrescribe la copia anterior)
       ansible.builtin.fetch:
         src: /conf/config.xml
-        dest: "{{ backup_directory }}/pfsense_config_{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M') }}.xml"
+        dest: "{{ backup_directory }}/pfsense_config_latest.xml"
         flat: true
 
-    - name: Confirmar el guardado del archivo
+    - name: Confirmar el guardado del respaldo
       ansible.builtin.debug:
-        msg: "Respaldo de pfSense guardado en {{ backup_directory }}/pfsense_config_{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M') }}.xml"
+        msg: "Copia de seguridad guardada y actualizada en {{ backup_directory }}/pfsense_config_latest.xml"
