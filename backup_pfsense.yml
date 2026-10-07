@@ -4,16 +4,9 @@
   gather_facts: false
 
   vars:
-    # Carpeta dentro del servidor de Semaphore donde se guardarán los backups
     backup_directory: "/tmp/pfsense_backups"
 
   tasks:
-    - name: Obtener la fecha y hora actual en la máquina de Semaphore
-      ansible.builtin.setup:
-        filter: "ansible_date_time"
-      delegate_to: localhost
-      run_once: true
-
     - name: Crear la carpeta local de respaldos si no existe
       ansible.builtin.file:
         path: "{{ backup_directory }}"
@@ -25,9 +18,9 @@
     - name: Descargar el archivo config.xml desde pfSense
       ansible.builtin.fetch:
         src: /conf/config.xml
-        dest: "{{ backup_directory }}/pfsense_config_{{ hostvars['localhost']['ansible_date_time']['date'] }}_{{ hostvars['localhost']['ansible_date_time']['hour'] }}-{{ hostvars['localhost']['ansible_date_time']['minute'] }}.xml"
+        dest: "{{ backup_directory }}/pfsense_config_{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M') }}.xml"
         flat: true
 
     - name: Confirmar el guardado del archivo
       ansible.builtin.debug:
-        msg: "Respaldo de pfSense guardado con éxito en: {{ backup_directory }}/pfsense_config_{{ hostvars['localhost']['ansible_date_time']['date'] }}_{{ hostvars['localhost']['ansible_date_time']['hour'] }}-{{ hostvars['localhost']['ansible_date_time']['minute'] }}.xml"
+        msg: "Respaldo de pfSense guardado en {{ backup_directory }}/pfsense_config_{{ lookup('pipe', 'date +%Y-%m-%d_%H-%M') }}.xml"
