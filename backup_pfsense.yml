@@ -4,7 +4,7 @@
   gather_facts: false
 
   vars:
-    backup_directory: "/tmp/pfsense_backups"
+    backup_directory: "/var/backups/pfsense"
 
   tasks:
     - name: Crear la carpeta local de respaldos si no existe
