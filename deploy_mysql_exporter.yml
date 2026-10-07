@@ -1,0 +1,87 @@
+---
+- name: Desplegar mysqld_exporter para MySQL/Zabbix
+  hosts: all
+  become: true
+
+  vars:
+    mysql_exporter_version: "0.15.1"
+    mysql_exporter_port: "9104"
+    mysql_user: "exporter"
+    mysql_password: "ExporterPassword123!"
+
+  tasks:
+    - name: Crear usuario de sistema para mysqld_exporter
+      ansible.builtin.user:
+        name: mysqld_exporter
+        shell: /bin/false
+        system: true
+        create_home: false
+
+    - name: Descargar el binario de mysqld_exporter
+      ansible.builtin.unarchive:
+        src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-amd64.tar.gz"
+        dest: /tmp
+        remote_src: true
+
+    - name: Mover el binario a /usr/local/bin
+      ansible.builtin.copy:
+        src: "/tmp/mysqld_exporter-{{ mysql_exporter_version }}.linux-amd64/mysqld_exporter"
+        dest: /usr/local/bin/mysqld_exporter
+        owner: mysqld_exporter
+        group: mysqld_exporter
+        mode: '0755'
+        remote_src: true
+
+    - name: Crear archivo de credenciales de MySQL (.my.cnf)
+      ansible.builtin.copy:
+        dest: /etc/.mysqld_exporter.cnf
+        owner: mysqld_exporter
+        group: mysqld_exporter
+        mode: '0600'
+        content: |
+          [client]
+          user={{ mysql_user }}
+          password={{ mysql_password }}
+          host=127.0.0.1
+          port=3306
+
+    - name: Crear usuario de monitoreo en MySQL
+      ansible.builtin.shell: |
+        mysql -e "CREATE USER IF NOT EXISTS '{{ mysql_user }}'@'localhost' IDENTIFIED BY '{{ mysql_password }}';"
+        mysql -e "GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '{{ mysql_user }}'@'localhost';"
+        mysql -e "FLUSH PRIVILEGES;"
+      ignore_errors: true
+
+    - name: Crear el servicio systemd mysqld_exporter
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/mysqld_exporter.service
+        content: |
+          [Unit]
+          Description=Prometheus MySQL Exporter
+          After=network.target
+
+          [Service]
+          User=mysqld_exporter
+          Group=mysqld_exporter
+          Type=simple
+          ExecStart=/usr/local/bin/mysqld_exporter \
+            --config.my-cnf=/etc/.mysqld_exporter.cnf \
+            --web.listen-address=:{{ mysql_exporter_port }}
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Recargar systemd y activar el servicio mysqld_exporter
+      ansible.builtin.systemd:
+        name: mysqld_exporter
+        daemon_reload: true
+        state: restarted
+        enabled: true
+
+    - name: Permitir el puerto 9104 en el firewall (UFW)
+      ansible.builtin.ufw:
+        rule: allow
+        port: "{{ mysql_exporter_port }}"
+        proto: tcp
+      ignore_errors: true
