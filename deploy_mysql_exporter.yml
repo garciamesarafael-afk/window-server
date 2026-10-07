@@ -45,11 +45,19 @@
           host=127.0.0.1
           port=3306
 
-    - name: Crear usuario de monitoreo en MySQL
+    - name: Instalar cliente mysql/mariadb si no está presente
+      ansible.builtin.package:
+        name:
+          - mariadb-client
+        state: present
+      ignore_errors: true
+
+    - name: Crear usuario de monitoreo en MySQL / MariaDB
       ansible.builtin.shell: |
-        mysql -e "CREATE USER IF NOT EXISTS '{{ mysql_user }}'@'localhost' IDENTIFIED BY '{{ mysql_password }}';"
-        mysql -e "GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '{{ mysql_user }}'@'localhost';"
-        mysql -e "FLUSH PRIVILEGES;"
+        DB_CMD=$(which mariadb || which mysql)
+        $DB_CMD -e "CREATE USER IF NOT EXISTS '{{ mysql_user }}'@'localhost' IDENTIFIED BY '{{ mysql_password }}';"
+        $DB_CMD -e "GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO '{{ mysql_user }}'@'localhost';"
+        $DB_CMD -e "FLUSH PRIVILEGES;"
       ignore_errors: true
 
     - name: Crear el servicio systemd mysqld_exporter
