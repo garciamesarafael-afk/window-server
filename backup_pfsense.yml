@@ -7,9 +7,9 @@
     - name: Descargar el archivo config.xml desde pfSense
       ansible.builtin.fetch:
         src: /conf/config.xml
-        dest: "/opt/pfsense_backups/pfsense_config_latest.xml"
+        dest: "/tmp/pfsense_config_latest.xml"
         flat: true
 
     - name: Confirmar el guardado del respaldo
       ansible.builtin.debug:
-        msg: "Copia de seguridad guardada con éxito en /opt/pfsense_backups/pfsense_config_latest.xml"
+        msg: "Copia de seguridad guardada con éxito en /tmp/pfsense_config_latest.xml"
